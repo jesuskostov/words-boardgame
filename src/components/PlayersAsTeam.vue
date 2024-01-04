@@ -32,7 +32,7 @@ import { onMounted, ref } from "vue";
 import axios from "axios";
 
 export default {
-  name: "Team",
+  name: "PlayersAsTeam",
   props: {
     teamId: {
       type: Number,

@@ -27,16 +27,16 @@
         </button>
       </div>
     </div>
-    <!-- <div v-for="(team, i) in teams" :key="i">
-      <Team :team-id="team.id" :team-color="team.color" />
-    </div> -->
+    <div v-for="(team, i) in teams" :key="i">
+      <PlayersAsTeam :team-id="team.id" :team-color="team.color" />
+    </div>
   </div>
 </template>
 
 <script setup>
 import { onMounted, ref } from "vue";
-// import Team from "../components/Team";
 import axios from "axios";
+import PlayersAsTeam from "../components/PlayersAsTeam";
 import router from "../router";
 
 const teams = ref([]);
