@@ -98,9 +98,12 @@ const confirmModal = ref(false);
 // get user
 const user = computed(() => store.state.user);
 
-watch(user, async () => {
-  if (!user.value) return;
-  router.push("/selfie");
+watch(user, async (value) => {
+  if (value.photo_path) {
+    router.push("/playground");
+  } else {
+    router.push("/selfie");
+  }
 });
 
 onMounted(async () => {

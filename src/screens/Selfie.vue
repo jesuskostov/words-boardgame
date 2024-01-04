@@ -6,16 +6,23 @@
         Снимам автоматично и ще използвам снимката ти в играта.
       </p>
     </div>
-    <div class="relative w-10/12 mx-auto">
+    <div
+      class="relative w-10/12 mx-auto bg-custom-gray h-[300px] rounded-xl overflow-hidden"
+    >
       <SimpleVueCamera
         ref="camera"
-        @loading="loading"
+        @started="started"
         :resolution="{ width: 350, height: 350 }"
         :facing-mode="'user'"
       />
+      <img
+        class="absolute w-2/3 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+        src="../assets/camera.svg"
+        alt=""
+      />
       <div
         v-if="countDown > 0"
-        class="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center"
+        class="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center z-[100]"
       >
         <span class="text-7xl font-bold">{{ countDown }}</span>
       </div>
@@ -38,23 +45,24 @@ onMounted(async () => {
   const token = localStorage.getItem("token");
   if (token) {
     await store.dispatch("getCurrentUser");
-    startCountdown();
   }
 });
 
-const startCountdown = () => {
-  countDown.value = 3;
-  countdownInterval = setInterval(() => {
-    countDown.value--;
-    if (countDown.value <= 0) {
-      clearInterval(countdownInterval);
-      captureAndSavePhoto();
-    }
-  }, 1000);
+const started = () => {
+  startCountdown();
 };
 
-const loading = () => {
-  console.log("loading");
+const startCountdown = () => {
+  countDown.value = 3;
+  setTimeout(() => {
+    countdownInterval = setInterval(() => {
+      countDown.value--;
+      if (countDown.value <= 0) {
+        clearInterval(countdownInterval);
+        captureAndSavePhoto();
+      }
+    }, 1000);
+  }, 1000);
 };
 
 const captureAndSavePhoto = async () => {
@@ -88,3 +96,9 @@ const savePhoto = async (photo) => {
   }
 };
 </script>
+
+<style>
+#camera-container {
+  z-index: 50;
+}
+</style>

@@ -33,7 +33,14 @@
 </template>
 
 <script setup>
-import { ref, watch, watchEffect, computed, onMounted } from "vue";
+import {
+  ref,
+  watch,
+  watchEffect,
+  computed,
+  onMounted,
+  onBeforeMount,
+} from "vue";
 import TurnNotifier from "../components/TurnNotifier.vue";
 import Timer from "../components/Timer.vue";
 import Informer from "../components/Informer.vue";
@@ -54,12 +61,13 @@ watch(loggedPlayers, (newValue) => {
   }
 });
 
-onMounted(() => {
-  store.dispatch("getWords");
+onMounted(async () => {
+  await store.dispatch("getCurrentTurn");
+  await store.dispatch("getWords");
 });
 
-const expectedWords = computed(() => expectedPlayers.value * store.state.words);
-const words = computed(() => store.state.allInsertedWords.length);
+// const expectedWords = computed(() => expectedPlayers.value * store.state.words);
+// const words = computed(() => store.state.allInsertedWords.length);
 
 const user = computed(() => store.state.user);
 const current_turn = computed(() => store.state.current_turn);
@@ -75,19 +83,21 @@ watch(current_turn, (val) => {
   }
 });
 
-watchEffect(() => {
-  if (loggedPlayers.value !== expectedPlayers.value) {
-    router.push("/waiting-players");
-    return;
-  } else {
-    store.dispatch("getCurrentTurn");
-  }
-  if (words.value !== expectedWords.value) {
-    router.push("/words-creation");
-  } else {
-    store.dispatch("getCurrentTurn");
-  }
-});
+// watchEffect(() => {
+//   if (loggedPlayers.value !== expectedPlayers.value) {
+//     // router.push("/waiting-players");
+//     return;
+//   } else {
+//     console.log("123");
+//     // store.dispatch("getCurrentTurn");
+//   }
+//   if (words.value !== expectedWords.value) {
+//     // router.push("/words-creation");
+//   } else {
+//     console.log("321");
+//     // store.dispatch("getCurrentTurn");
+//   }
+// });
 
 const start = () => {
   timer.value.startTimer(10);

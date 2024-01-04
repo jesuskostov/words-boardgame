@@ -28,6 +28,7 @@ const store = createStore({
     current_turn: null,
     teammates: null,
     current_word: null,
+    words_test: 0,
     // score: 0,
   },
   mutations: {
@@ -94,6 +95,9 @@ const store = createStore({
     SET_CURRENT_WORD: (state, payload) => {
       state.current_word = payload;
     },
+    SET_EXPECTED_WORDS_TEST: (state, payload) => {
+      state.words_test = payload;
+    },
     // SET_SCORE: (state, payload) => {
     //   state.score = payload;
     // },
@@ -145,7 +149,6 @@ const store = createStore({
       const res = await axios.post("https://words-api.g-home.site/api/login", {
         name,
       });
-      console.log("login", res);
       // save barrier token to local storage
       localStorage.setItem("token", res.data.token);
       axios.defaults.headers.common[
@@ -182,6 +185,7 @@ const store = createStore({
       const res = await axios.get(
         `https://words-api.g-home.site/api/get-users`
       );
+      console.log(res.data);
       const players = res.data.users;
       commit("SET_LOGGED_PLAYERS", players);
     },
@@ -197,6 +201,13 @@ const store = createStore({
       );
       const words = res.data.words;
       commit("SET_WORDS", words);
+    },
+    async getExpectedWordsForAGame({ commit }) {
+      const res = await axios.get(
+        `https://words-api.g-home.site/api/get-expected-words-for-game`
+      );
+      const words = res.data.words_to_insert;
+      commit("SET_EXPECTED_WORDS_TEST", words);
     },
     async getHowManyWordsLeftToInsert({ commit, state }) {
       const res = await axios.get(

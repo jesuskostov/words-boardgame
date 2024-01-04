@@ -6,13 +6,17 @@
     />
     <div class="flex justify-center items-center my-20">
       <div class="relative w-64 h-64 border border-white rounded-full">
-        <!-- Players positioned on a circle -->
         <div v-for="(player, index) in players" :key="index">
           <div
-            class="absolute w-12 h-12 rounded-full border-2 border-white overflow-hidden"
+            class="absolute rounded-full border-2 border-white overflow-hidden"
             :style="positionOnCircle(index, players.length)"
+            :class="{
+              'w-20 h-20': players.length === 4,
+              'w-14 h-14': players.length > 4,
+            }"
           >
             <img
+              v-if="player.photo_path"
               :src="`https://words-api.g-home.site/${player.photo_path}`"
               class="w-full h-full rounded-full object-cover"
               alt=""
@@ -34,10 +38,11 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
-import axios from "axios";
+import { onMounted, ref, computed } from "vue";
 import PlayersAsTeam from "../components/PlayersAsTeam.vue";
+import axios from "axios";
 import router from "../router";
+import store from "../store";
 
 const teams = ref([]);
 const players = ref([]);
@@ -45,7 +50,13 @@ const players = ref([]);
 const positionOnCircle = (index, total) => {
   const angle = index * (360 / total) * (Math.PI / 180);
   const radius = 124; // Radius of the circle
-  const dotSize = 0; // Size of the dot (w-12/h-12 in TailwindCSS is 3rem or 48px)
+  let dotSize = 30; // Size of the dot (w-12/h-12 in TailwindCSS is 3rem or 48px)
+  if (players.value.length <= 4) {
+    dotSize = 30;
+  }
+  if (players.value.length >= 6) {
+    dotSize = 5;
+  }
   const x = Math.cos(angle) * radius - dotSize / 2;
   const y = Math.sin(angle) * radius - dotSize / 2;
   return {
@@ -69,14 +80,12 @@ const mixTeams = async () => {
       const res_teams = await axios.get(
         `https://words-api.g-home.site/api/get-user-by-team-id/${team.id}`
       );
-
       if (res_teams.data.users && res_teams.data.users.length > 0) {
         teamLeaders.push({
           ...res_teams.data.users[0],
           team_color: team.color,
         });
       }
-
       if (res_teams.data.users && res_teams.data.users.length > 1) {
         teamMembers.push({
           ...res_teams.data.users[1],
@@ -91,11 +100,25 @@ const mixTeams = async () => {
   }
 };
 
-const startGame = () => {
-  router.push("/playground");
+const startGame = async () => {
+  await axios.post("https://words-api.g-home.site/api/start-game");
 };
 
-onMounted(() => {
-  mixTeams();
+const loggedPlayers = computed(() => store.state.loggedPlayers);
+const expectedPlayers = computed(() => store.state.teams);
+const expectedWords = computed(() => store.state.words_test);
+const allInsertedWords = computed(() => store.state.allInsertedWords.length);
+
+onMounted(async () => {
+  await store.dispatch("getLoggedPlayers");
+  await store.dispatch("getExpectedWordsForAGame");
+  if (
+    loggedPlayers.value === expectedPlayers.value * 2 &&
+    expectedWords.value === allInsertedWords.value
+  ) {
+    mixTeams();
+  } else {
+    router.push("/waiting-players");
+  }
 });
 </script>

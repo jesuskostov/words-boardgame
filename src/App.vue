@@ -44,6 +44,11 @@ window.Echo.channel("turn-update").listen("TurnUpdate", (e) => {
   store.dispatch("getCurrentTurn");
 });
 
+window.Echo.channel("game-started").listen("GameStarted", (e) => {
+  console.log("game started");
+  router.push("/playground");
+});
+
 onMounted(() => {
   const game_id = localStorage.getItem("game_id");
   if (game_id) {

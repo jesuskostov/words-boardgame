@@ -5,6 +5,7 @@
         class="w-11 h-11 bg-white rounded-full text-black flex items-center justify-center overflow-hidden border border-orange-400"
       >
         <img
+          v-if="current_turn?.photo_path"
           :src="`https://words-api.g-home.site/${current_turn?.photo_path}`"
           class="w-full h-full rounded-full object-cover"
         />

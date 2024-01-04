@@ -36,9 +36,13 @@ import router from "../router/index";
 const teams = ref([]);
 const expectedPlayers = ref(4);
 
+const loggedPlayers = computed(() => store.state.loggedPlayers);
+const players = computed(() => store.state.players);
+
 onMounted(async () => {
+  await store.dispatch("getLoggedPlayers");
   if (expectedPlayers.value === 0) {
-    // router.push("/words-creation");
+    router.push("/words-creation");
     return;
   }
   teams.value = await store.dispatch("fetchTeams");
@@ -50,16 +54,14 @@ onMounted(async () => {
   store.dispatch("getCurrentUser");
 });
 
-const loggedPlayers = computed(() => store.state.loggedPlayers);
-const players = computed(() => store.state.players);
-
 watch(loggedPlayers, (newValue) => {
   expectedPlayers.value = store.state.teams * 2 - newValue;
 });
 
 watchEffect(() => {
   if (expectedPlayers.value === 0) {
-    router.push("/playground");
+    console.log("waiting players");
+    router.push("/words-creation");
   }
 });
 
@@ -70,8 +72,4 @@ watch(user, (val) => {
     router.push("/selfie");
   }
 });
-
-const joinTeam = (teamId) => {
-  store.dispatch("joinTeam", teamId);
-};
 </script>

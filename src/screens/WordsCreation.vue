@@ -14,7 +14,7 @@
       class="text-[1.5rem] font-bold text-center mt-5 mb-12"
       v-text="'Събиране на думи'"
     />
-    <div v-if="wordsToInsertLeft !== 0">
+    <div v-if="wordsToInsertLeft > 0">
       <div :class="`grid grid-flow-col auto-cols-auto gap-x-2 mb-6`">
         <div
           v-for="word in indexedWords"
@@ -79,7 +79,14 @@ watch(allInsertedWords, () => {
   audio.play().catch((e) => console.error("Error playing audio:", e));
 });
 
-onMounted(() => {
+const loggedPlayers = computed(() => store.state.loggedPlayers);
+
+onMounted(async () => {
+  await store.dispatch("getLoggedPlayers");
+  if (expectedPlayers.value !== loggedPlayers.value) {
+    router.push("/waiting-players");
+    return;
+  }
   circleWidth.value = window.innerWidth / 1.7;
 });
 
@@ -98,11 +105,16 @@ const sendWord = async () => {
 
 const mixTeams = async () => {
   const res = await axios.post("https://words-api.g-home.site/api/mix-teams");
+  const result = await axios.get(
+    "https://words-api.g-home.site/api/is-game-running"
+  );
   if (res.status === 201) {
     router.push("/team-selection");
   }
-  if (res.status === 200) {
+  if (res.status === 200 && result.data.isGameRunning === 1) {
     router.push("/playground");
+  } else {
+    router.push("/team-selection");
   }
 };
 
