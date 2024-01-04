@@ -1,7 +1,7 @@
 <template>
   <div>
     <label class="flex justify-between items-center cursor-pointer">
-      <span class="text-sm inline-block text-blac"
+      <span class="text-sm inline-block text-white"
         >Подбор на играчи - случаен принцип</span
       >
       <div class="relative">

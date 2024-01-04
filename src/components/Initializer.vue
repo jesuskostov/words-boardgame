@@ -12,7 +12,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watchEffect } from "vue";
+import { onMounted, ref } from "vue";
 import axios from "axios";
 import store from "../store/index";
 import router from "../router/index";
@@ -61,17 +61,6 @@ onMounted(async () => {
   } else {
     router.push("/");
     loading.value = false;
-  }
-});
-
-// isGameActive
-const isGameActive = computed(() => store.state.isGameActive);
-const user = computed(() => store.state.user);
-
-// if user is not null and isGameActive is true router push to playground
-watchEffect(() => {
-  if (user.value !== null && isGameActive.value) {
-    // router.push("/playground");
   }
 });
 </script>

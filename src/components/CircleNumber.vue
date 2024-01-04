@@ -1,14 +1,14 @@
 <template>
   <div
-    class="relative border border-black rounded-full mx-auto flex flex-col items-center justify-center"
+    class="relative border border-white rounded-full mx-auto flex flex-col items-center justify-center"
     :style="`width: ${circleWidth}px; height: ${circleWidth}px;`"
   >
-    <p class="text-[80px]" v-text="count" />
-    <p v-if="type === 'teams'">Отбора</p>
-    <p v-if="type === 'words'">Думи</p>
-    <p v-if="type === 'time'">Секунди</p>
+    <p class="text-[80px] text-white" v-text="count" />
+    <p v-if="type === 'teams'" class="text-white">Отбора</p>
+    <p v-if="type === 'words'" class="text-white">Думи</p>
+    <p v-if="type === 'time'" class="text-white">Секунди</p>
     <button
-      class="absolute bottom-0 left-0 bg-black-custom rounded-full text-white flex items-center justify-center text-5xl"
+      class="absolute bottom-0 left-0 bg-custom-gray rounded-full text-white flex items-center justify-center text-5xl"
       :style="`width: ${circleWidth / 4}px; height: ${circleWidth / 4}px;`"
       :disabled="
         (type === 'teams' && count === 2) ||
@@ -20,7 +20,7 @@
       -
     </button>
     <button
-      class="absolute bottom-0 right-0 bg-black-custom rounded-full text-white flex items-center justify-center text-5xl"
+      class="absolute bottom-0 right-0 bg-custom-gray rounded-full text-white flex items-center justify-center text-5xl"
       :style="`width: ${circleWidth / 4}px; height: ${circleWidth / 4}px;`"
       @click="up"
     >

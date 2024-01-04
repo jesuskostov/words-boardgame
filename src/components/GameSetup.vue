@@ -5,12 +5,9 @@
       :current-step="currentStep"
     />
     <circle-number ref="circleSetting" :type="step.name" />
-    <toggle-player-pick v-if="currentStep === 0" />
-    <toggle-categories v-if="currentStep === 1" ref="categoriesComponent" />
-    <button
-      class="h-16 w-full bg-black-custom text-white rounded-xl"
-      @click="save"
-    >
+    <!-- <toggle-player-pick v-if="currentStep === 0" /> -->
+    <!-- <toggle-categories v-if="currentStep === 1" ref="categoriesComponent" /> -->
+    <button class="h-16 w-full bg-white text-black rounded-xl" @click="save">
       Напред
     </button>
   </div>
@@ -20,8 +17,8 @@
 import { ref, computed, watch } from "vue";
 import Steps from "./Steps.vue";
 import CircleNumber from "./CircleNumber.vue";
-import TogglePlayerPick from "./TogglePlayerPick.vue";
-import ToggleCategories from "./ToggleCategories.vue";
+// import TogglePlayerPick from "./TogglePlayerPick.vue";
+// import ToggleCategories from "./ToggleCategories.vue";
 import store from "../store/index";
 import router from "../router";
 
@@ -39,9 +36,9 @@ watch(isStepFinished, (value) => {
 
 const save = () => {
   circleSetting.value.save(step);
-  if (currentStep.value === 2 && isStepFinished.value === false) {
-    categoriesComponent.value.save();
-  }
+  // if (currentStep.value === 2 && isStepFinished.value === false) {
+  //   categoriesComponent.value.save();
+  // }
 };
 </script>
 

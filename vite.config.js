@@ -6,30 +6,24 @@ export default defineConfig({
   plugins: [
     vue(),
     VitePWA({
-      // PWA plugin options
-      registerType: "auto",
-      includeAssets: ["vite.svg", "robots.txt", "apple-touch-icon.png"],
-      manifest: {
-        name: "My Vue App",
-        short_name: "VueApp",
-        description: "My Awesome Vue.js App",
-        theme_color: "#ffffff",
-        icons: [
-          {
-            src: "pwa-192x192.png", // 192x192 png icon
-            sizes: "192x192",
-            type: "image/png",
-          },
-          {
-            src: "pwa-512x512.png", // 512x512 png icon
-            sizes: "512x512",
-            type: "image/png",
-          },
-        ],
-        start_url: "/",
-        display: "standalone",
-        background_color: "#ffffff",
-      },
+      name: "Association",
+      short_name: "Association",
+      start_url: "/",
+      display: "standalone",
+      background_color: "#000",
+      theme_color: "#000",
+      description: "Забавна игра за асоциации",
+      icons: [
+        {
+          src: "../icons/appstore.png",
+          sizes: "48x48",
+          type: "image/png",
+        },
+        {
+          src: "../icons/playstore.png",
+          sizes: "72x72 96x96 128x128 256x256",
+        },
+      ],
     }),
   ],
 });

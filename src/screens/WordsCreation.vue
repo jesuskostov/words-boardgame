@@ -1,7 +1,7 @@
 <template>
-  <div class="mt-6">
+  <div class="text-white mt-6">
     <div
-      class="relative border border-black rounded-full mx-auto p-1"
+      class="relative border border-white rounded-full mx-auto p-1"
       :style="`width: ${circleWidth}px; height: ${circleWidth}px;`"
     >
       <div
@@ -15,7 +15,7 @@
       v-text="'Събиране на думи'"
     />
     <div v-if="wordsToInsertLeft !== 0">
-      <div :class="`grid grid-cols-${words} gap-x-2 mb-6`">
+      <div :class="`grid grid-flow-col auto-cols-auto gap-x-2 mb-6`">
         <div
           v-for="word in indexedWords"
           :key="word.index"
@@ -27,11 +27,11 @@
       <input
         type="text"
         v-model="wordToBeSent"
-        class="h-14 rounded-2xl w-full bg-custom-gray px-4 py-1 text-sm"
+        class="h-14 rounded-2xl w-full bg-custom-gray text-white px-4 py-1 text-sm"
         placeholder="Въведи дума"
       />
       <button
-        class="fixed bottom-10 left-1/2 transform -translate-x-1/2 w-[90%] h-16 bg-black-custom text-white rounded-xl"
+        class="fixed bottom-10 left-1/2 transform -translate-x-1/2 w-[90%] h-16 bg-custom-gray text-white rounded-xl"
         @click="sendWord"
       >
         Изпращане
@@ -41,10 +41,11 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, computed, watch, onMounted, watchEffect } from "vue";
 import store from "../store/index";
 import WordAddedSound from "../assets/sounds/word-added.mp3";
 import axios from "axios";
+import router from "../router/index";
 
 const circleWidth = ref(0);
 const wordToBeSent = ref("");
@@ -66,7 +67,9 @@ const indexedWords = computed(() => {
     const shouldBeGreen = index <= words.value - wordsToInsertLeft.value;
     return {
       index,
-      class: shouldBeGreen ? "bg-green-light" : "bg-red-light",
+      class: shouldBeGreen
+        ? "bg-white text-black"
+        : "bg-custom-gray text-white",
     };
   });
 });
@@ -74,6 +77,10 @@ const indexedWords = computed(() => {
 watch(allInsertedWords, () => {
   const audio = new Audio(WordAddedSound);
   audio.play().catch((e) => console.error("Error playing audio:", e));
+});
+
+onMounted(() => {
+  circleWidth.value = window.innerWidth / 1.7;
 });
 
 const sendWord = async () => {
@@ -89,7 +96,19 @@ const sendWord = async () => {
   }
 };
 
-onMounted(() => {
-  circleWidth.value = window.innerWidth / 1.7;
+const mixTeams = async () => {
+  const res = await axios.post("https://words-api.g-home.site/api/mix-teams");
+  if (res.status === 201) {
+    router.push("/team-selection");
+  }
+  if (res.status === 200) {
+    router.push("/playground");
+  }
+};
+
+watch(allInsertedWords, (val) => {
+  if (val === allExpectedWords.value) {
+    mixTeams();
+  }
 });
 </script>

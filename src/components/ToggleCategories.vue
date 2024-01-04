@@ -1,7 +1,7 @@
 <template>
   <div>
     <label class="flex justify-between items-center cursor-pointer mb-4">
-      <span class="text-sm inline-block text-blac">Ще играем с категории</span>
+      <span class="text-sm inline-block text-white">Ще играем с категории</span>
       <div class="relative">
         <input
           type="checkbox"
@@ -19,7 +19,7 @@
         <input
           type="text"
           v-model="value"
-          class="h-14 rounded-2xl w-full bg-custom-gray px-4 py-1 text-sm"
+          class="h-14 rounded-2xl w-full bg-custom-gray text-white px-4 py-1 text-sm"
           placeholder="Въведи категории"
         />
         <p class="text-xs text-red-500 mt-1">

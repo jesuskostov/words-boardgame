@@ -6,6 +6,7 @@ import Login from "../screens/Login.vue";
 import Selfie from "../screens/Selfie.vue";
 import WaitingPlayers from "../screens/WaitingPlayers.vue";
 import WordsCreation from "../screens/WordsCreation.vue";
+import TeamSelection from "../screens/TeamSelection.vue";
 
 const routes = [
   {
@@ -42,6 +43,11 @@ const routes = [
     path: "/words-creation",
     name: "WordsCreation",
     component: WordsCreation,
+  },
+  {
+    path: "/team-selection",
+    name: "TeamSelection",
+    component: TeamSelection,
   },
 ];
 

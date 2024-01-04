@@ -24,6 +24,11 @@ const store = createStore({
     players: [],
     allInsertedWords: [],
     expectedWordsToInsert: 3,
+    errors: "",
+    current_turn: null,
+    teammates: null,
+    current_word: null,
+    // score: 0,
   },
   mutations: {
     SET_CONFIG(state, { step, value }) {
@@ -67,7 +72,6 @@ const store = createStore({
       state.game_id = Number(payload.game_id);
     },
     SET_LOGGED_PLAYERS: (state, payload) => {
-      console.log(payload);
       state.loggedPlayers = payload.length;
       state.players = payload;
     },
@@ -77,6 +81,22 @@ const store = createStore({
     SET_EXPECTED_WORDS: (state, payload) => {
       state.expectedWordsToInsert = payload;
     },
+    SET_ERRORS: (state, payload) => {
+      state.errors = payload;
+      setTimeout(() => {
+        state.errors = "";
+      }, 3000);
+    },
+    SET_CURRENT_TURN: (state, payload) => {
+      state.current_turn = payload[0];
+      state.teammates = payload[1];
+    },
+    SET_CURRENT_WORD: (state, payload) => {
+      state.current_word = payload;
+    },
+    // SET_SCORE: (state, payload) => {
+    //   state.score = payload;
+    // },
   },
   actions: {
     async createGame({ commit, state }, name) {
@@ -112,7 +132,9 @@ const store = createStore({
           name,
         }
       );
-      // save barrier token to local storage
+      if (res.data.message === "game full") {
+        commit("SET_ERRORS", "Играта е пълна");
+      }
       localStorage.setItem("token", res.data.token);
       axios.defaults.headers.common[
         "Authorization"
@@ -123,6 +145,7 @@ const store = createStore({
       const res = await axios.post("https://words-api.g-home.site/api/login", {
         name,
       });
+      console.log("login", res);
       // save barrier token to local storage
       localStorage.setItem("token", res.data.token);
       axios.defaults.headers.common[
@@ -182,6 +205,34 @@ const store = createStore({
       const words = res.data.words_to_insert;
       commit("SET_EXPECTED_WORDS", words);
     },
+    async getCurrentTurn({ commit }) {
+      const res = await axios.get(
+        `https://words-api.g-home.site/api/get-current-turn`
+      );
+      const payload = res.data;
+      commit("SET_CURRENT_TURN", payload);
+    },
+    async endRound({ commit }) {
+      await axios.post(`https://words-api.g-home.site/api/end-round`);
+    },
+    async getWord({ commit }) {
+      const res = await axios.get(`https://words-api.g-home.site/api/get-word`);
+      commit("SET_CURRENT_WORD", res.data[0]);
+    },
+    async nextWord({ commit }, { word }) {
+      console.log(word);
+      await axios.post(`https://words-api.g-home.site/api/point`, {
+        word,
+      });
+      this.dispatch("getWord");
+    },
+    // async getScore({ commit }) {
+    //   const res = await axios.get(
+    //     `https://words-api.g-home.site/api/get-score-for-team`
+    //   );
+    //   const payload = res.data.scores;
+    //   commit("SET_SCORE", payload);
+    // },
   },
 });
 

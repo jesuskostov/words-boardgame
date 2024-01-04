@@ -6,7 +6,7 @@ export default {
       colors: {
         "red-light": "#FFECE9",
         "green-light": "#75EAAF",
-        "custom-gray": "#F5F5F5",
+        "custom-gray": "#252528",
         "black-custom": "#010010",
       },
     },

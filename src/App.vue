@@ -39,6 +39,11 @@ window.Echo.channel("word-created").listen("WordCreated", (e) => {
   store.dispatch("getWords");
 });
 
+window.Echo.channel("turn-update").listen("TurnUpdate", (e) => {
+  console.log("get current turn");
+  store.dispatch("getCurrentTurn");
+});
+
 onMounted(() => {
   const game_id = localStorage.getItem("game_id");
   if (game_id) {
@@ -52,6 +57,10 @@ onMounted(() => {
 </script>
 
 <style>
+html,
+body {
+  background-color: #000;
+}
 #app {
   padding: env(safe-area-inset-top) env(safe-area-inset-right)
     env(safe-area-inset-bottom) env(safe-area-inset-left);
