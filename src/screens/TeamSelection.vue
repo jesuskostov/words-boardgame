@@ -35,7 +35,7 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
-import Team from "../components/team.vue";
+import Team from "../components/Team";
 import axios from "axios";
 import router from "../router";
 
