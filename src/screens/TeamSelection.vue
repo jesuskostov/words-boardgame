@@ -36,7 +36,8 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import axios from "axios";
-import PlayersAsTeam from "../components/PlayersAsTeam";
+import PlayersAsTeam from "../components/PlayersAsTeam.vue";
+import Timer from "../components/Timer.vue";
 import router from "../router";
 
 const teams = ref([]);
