@@ -33,19 +33,13 @@
 </template>
 
 <script setup>
-import {
-  ref,
-  watch,
-  watchEffect,
-  computed,
-  onMounted,
-  onBeforeMount,
-} from "vue";
+import { ref, watch, computed, onMounted } from "vue";
 import TurnNotifier from "../components/TurnNotifier.vue";
 import Timer from "../components/Timer.vue";
 import Informer from "../components/Informer.vue";
 import store from "../store/index";
 import router from "../router/index";
+import axios from "axios";
 
 const hidden = ref(false);
 const notifier = ref(false);
@@ -62,8 +56,13 @@ watch(loggedPlayers, (newValue) => {
 });
 
 onMounted(async () => {
-  await store.dispatch("getCurrentTurn");
-  await store.dispatch("getWords");
+  const result = await axios.get(
+    "https://words-api.g-home.site/api/is-game-running"
+  );
+  if (result.data.isGameRunning === 1) {
+    await store.dispatch("getCurrentTurn");
+    await store.dispatch("getWords");
+  }
 });
 
 // const expectedWords = computed(() => expectedPlayers.value * store.state.words);

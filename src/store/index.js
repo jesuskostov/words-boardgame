@@ -185,7 +185,6 @@ const store = createStore({
       const res = await axios.get(
         `https://words-api.g-home.site/api/get-users`
       );
-      console.log(res.data);
       const players = res.data.users;
       commit("SET_LOGGED_PLAYERS", players);
     },
