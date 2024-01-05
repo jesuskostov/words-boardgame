@@ -9,30 +9,56 @@
     <p class="text-white text-center text-2xl mt-2">
       {{ formatTime(timeLeft) }}
     </p>
-    <button @click="startTimer" class="text-white">start</button>
+    <button @click="pauseTimer" class="text-white">Pause</button>
+    <div
+      v-if="current_turn?.id !== user?.id"
+      class="fixed top-1/3 left-1/2 transform -translate-x-1/2 w-full px-4 h-52 flex flex-col items-center"
+    >
+      <div class="relative w-32 h-32 mx-auto rounded-full overflow-hidden p-1">
+        <div
+          class="absolute top-0 left-0 w-full h-full border-[3px] border-dotted border-orange-400 spin-custom"
+        ></div>
+        <!-- <div
+          class="absolute top-0 left-0 w-full h-full border-[3px] border-dotted border-white animate-pulse"
+        ></div> -->
+        <img
+          v-if="current_turn?.photo_path"
+          :src="`https://words-api.g-home.site/${current_turn?.photo_path}`"
+          class="w-full h-full object-cover rounded-full"
+          alt=""
+        />
+      </div>
+      <p class="text-white mt-2 text-xl">{{ current_turn?.name }} е на ред</p>
+    </div>
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import store from "../store/index";
 import axios from "axios";
 
 export default {
-  setup() {
+  setup(_, { emit }) {
     const timeLeft = ref(0);
     const totalDuration = ref(0); // Store the total duration
     let timer = null;
     const duration = computed(() => store.state.time);
 
     window.Echo.channel("timer-start").listen("TimerStart", (e) => {
-      store.dispatch("getWord");
       totalDuration.value = duration.value;
       const startTime = Date.now();
       localStorage.setItem("timerStart", startTime);
       localStorage.setItem("timerDuration", duration.value);
       updateTimeLeft();
       timer = setInterval(updateTimeLeft, 1000);
+    });
+
+    window.Echo.channel("pause-timer").listen("TimerPause", (e) => {
+      // pause timer and save the time left
+      clearInterval(timer);
+      localStorage.setItem("timerStart", Date.now());
+      localStorage.setItem("timerDuration", timeLeft.value);
     });
 
     const progressBarWidth = computed(() => {
@@ -71,13 +97,31 @@ export default {
       axios.post("https://words-api.g-home.site/api/start-timer");
     };
 
+    const pauseTimer = () => {
+      axios.post("https://words-api.g-home.site/api/pause-timer");
+    };
+
     const user = computed(() => store.state.user);
     const current_turn = computed(() => store.state.current_turn);
+
+    // watch([user, current_turn], ([newUser, newCurrentTurn]) => {
+    //   if (
+    //     newUser?.id !== undefined &&
+    //     newCurrentTurn?.id !== undefined &&
+    //     newUser.id === newCurrentTurn.id
+    //   ) {
+    //     // console.log("Your turn");
+    //   } else {
+    //     // console.log(current_turn.value);
+    //   }
+    // });
 
     const endRound = () => {
       // Make API call to server to end the round
       localStorage.removeItem("timerStart");
       localStorage.removeItem("timerDuration");
+      emit("reset");
+      console.log("try to emit");
       if (user.value.id === current_turn.value.id) {
         store.dispatch("endRound");
       }
@@ -112,7 +156,21 @@ export default {
       startTimer,
       timeLeft,
       formatTime,
+      current_turn,
+      user,
+      pauseTimer,
     };
   },
 };
 </script>
+
+<style>
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spin-custom {
+  animation: spin 3s linear infinite;
+}
+</style>

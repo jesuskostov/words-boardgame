@@ -69,6 +69,9 @@ const store = createStore({
     SET_USER: (state, payload) => {
       state.user = payload.user;
     },
+    SET_TEAMMATE: (state, payload) => {
+      state.teammates = payload;
+    },
     SET_GAME_ID: (state, payload) => {
       state.game_id = Number(payload.game_id);
     },
@@ -90,7 +93,7 @@ const store = createStore({
     },
     SET_CURRENT_TURN: (state, payload) => {
       state.current_turn = payload[0];
-      state.teammates = payload[1];
+      // state.teammates = payload[1];
     },
     SET_CURRENT_WORD: (state, payload) => {
       state.current_word = payload;
@@ -193,6 +196,10 @@ const store = createStore({
         "https://words-api.g-home.site/api/get-current-user"
       );
       commit("SET_USER", res.data);
+      const res2 = await axios.get(
+        "https://words-api.g-home.site/api/get-current-user"
+      );
+      commit("SET_TEAMMATE", res2.data.teammate);
     },
     async getWords({ commit, state }) {
       const res = await axios.get(

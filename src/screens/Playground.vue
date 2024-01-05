@@ -2,7 +2,7 @@
   <div class="text-white flex flex-col justify-between h-[87vh]">
     <div>
       <Informer v-if="current_turn" />
-      <Timer ref="timer" />
+      <Timer ref="timer" @reset="reset" />
       <TurnNotifier v-if="notifier" @start="start" />
     </div>
     <h1
@@ -43,6 +43,9 @@ import axios from "axios";
 
 const hidden = ref(false);
 const notifier = ref(false);
+const hasNotifierBeenShown = ref(
+  localStorage.getItem("hasNotifierBeenShown") === "true"
+);
 const timer = ref(null);
 
 store.dispatch("getLoggedPlayers");
@@ -60,46 +63,43 @@ onMounted(async () => {
     "https://words-api.g-home.site/api/is-game-running"
   );
   if (result.data.isGameRunning === 1) {
+    await store.dispatch("getWord");
     await store.dispatch("getCurrentTurn");
-    await store.dispatch("getWords");
   }
 });
-
-// const expectedWords = computed(() => expectedPlayers.value * store.state.words);
-// const words = computed(() => store.state.allInsertedWords.length);
 
 const user = computed(() => store.state.user);
 const current_turn = computed(() => store.state.current_turn);
 const current_word = computed(() => store.state.current_word);
 
-const nextWord = async () => {
-  await store.dispatch("nextWord", { word: current_word.value });
-};
-
-watch(current_turn, (val) => {
-  if (val?.id === user.value?.id) {
+watch([user, current_turn], ([newUser, newCurrentTurn]) => {
+  if (
+    newUser?.id !== undefined &&
+    newCurrentTurn?.id !== undefined &&
+    newUser.id === newCurrentTurn.id &&
+    !hasNotifierBeenShown.value // Check if notifier has not been shown before
+  ) {
     notifier.value = true;
   }
 });
 
-// watchEffect(() => {
-//   if (loggedPlayers.value !== expectedPlayers.value) {
-//     // router.push("/waiting-players");
-//     return;
-//   } else {
-//     console.log("123");
-//     // store.dispatch("getCurrentTurn");
-//   }
-//   if (words.value !== expectedWords.value) {
-//     // router.push("/words-creation");
-//   } else {
-//     console.log("321");
-//     // store.dispatch("getCurrentTurn");
-//   }
-// });
+const nextWord = async () => {
+  await store.dispatch("nextWord", { word: current_word.value });
+};
+
+const reset = () => {
+  notifier.value = false;
+  hasNotifierBeenShown.value = false;
+  localStorage.removeItem("hasNotifierBeenShown");
+  console.log(213);
+};
 
 const start = () => {
-  timer.value.startTimer(10);
-  notifier.value = false;
+  if (current_word.value) {
+    timer.value.startTimer();
+    notifier.value = false;
+    hasNotifierBeenShown.value = true; // Set flag to true after showing notifier
+    localStorage.setItem("hasNotifierBeenShown", "true");
+  }
 };
 </script>

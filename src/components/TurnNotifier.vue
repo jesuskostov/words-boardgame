@@ -21,7 +21,6 @@ import { computed, onMounted } from "vue";
 import store from "../store/index";
 
 const emit = defineEmits(["start"]);
-
 const current_turn = computed(() => store.state.current_turn);
 
 onMounted(() => {

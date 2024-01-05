@@ -5,13 +5,13 @@
         class="w-11 h-11 bg-white rounded-full text-black flex items-center justify-center overflow-hidden border border-orange-400"
       >
         <img
-          v-if="current_turn?.photo_path"
-          :src="`https://words-api.g-home.site/${current_turn?.photo_path}`"
+          v-if="user?.photo_path"
+          :src="`https://words-api.g-home.site/${user?.photo_path}`"
           class="w-full h-full rounded-full object-cover"
         />
       </div>
       <div class="text-left">
-        <p class="text-lg font-bold">{{ current_turn?.name }}</p>
+        <p class="text-lg font-bold">{{ user?.name }}</p>
         <p class="relative -top-1 text-sm">{{ teammates?.name }}</p>
       </div>
     </div>
@@ -31,7 +31,8 @@
 import { computed } from "vue";
 import store from "../store/index";
 
-const current_turn = computed(() => store.state.current_turn);
 const teammates = computed(() => store.state.teammates);
+const user = computed(() => store.state.user);
 const score = computed(() => store.state.score);
+store.dispatch("getCurrentUser");
 </script>
