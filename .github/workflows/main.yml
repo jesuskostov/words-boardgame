@@ -34,4 +34,5 @@ jobs:
 
       - name: Send SMS Notification
         run: |
-          curl "https://my.zitasms.com/services/send.php?key=${{ secrets.ZITASMS_KEY }}&number=%2B359876841230&message=WordsGame%20Deployed.%20Version:%20${{ env.APP_VERSION }}.%20Commit:%20${{ env.COMMIT_MESSAGE }}&devices=2108&type=sms&prioritize=0"
+          MESSAGE="WordsGame%20Deployed.%0AVersion:%20${{ env.APP_VERSION }}%0ACommit:%20${{ env.COMMIT_MESSAGE }}"
+          curl "https://my.zitasms.com/services/send.php?key=${{ secrets.ZITASMS_KEY }}&number=%2B359876841230&message=${MESSAGE}&devices=2108&type=sms&prioritize=0"
