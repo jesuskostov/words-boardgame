@@ -30,8 +30,7 @@ jobs:
         run: echo "APP_VERSION=$(cat package.json | jq -r .version)" >> $GITHUB_ENV
 
       - name: Get Latest Commit Message
-        id: get_commit_message
-        run: echo "COMMIT_MESSAGE=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
+        run: echo "COMMIT_MESSAGE=$(git log -1 --pretty=%B | jq -sRr @uri)" >> $GITHUB_ENV
 
       - name: Send SMS Notification
         run: |
