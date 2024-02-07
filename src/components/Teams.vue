@@ -34,7 +34,6 @@ const leaveTeam = async () => {
   const res = await axios.post("https://words-api.g-home.site/api/leave-team", {
     teamId: team.id,
   });
-  console.log(res.data);
 };
 
 onMounted(() => {

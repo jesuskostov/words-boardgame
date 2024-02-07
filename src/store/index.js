@@ -1,5 +1,6 @@
 import { createStore } from "vuex";
 import axios from "axios";
+import router from "../router";
 
 const store = createStore({
   state: {
@@ -230,6 +231,7 @@ const store = createStore({
       commit("SET_CURRENT_TURN", payload);
     },
     async endRound({ commit }) {
+      console.log("end round from store");
       await axios.post(`https://words-api.g-home.site/api/end-round`);
     },
     async getWord({ commit }) {
@@ -237,11 +239,23 @@ const store = createStore({
       commit("SET_CURRENT_WORD", res.data[0]);
     },
     async nextWord({ commit }, { word }) {
-      console.log(word);
-      await axios.post(`https://words-api.g-home.site/api/point`, {
+      const res = await axios.post(`https://words-api.g-home.site/api/point`, {
         word,
       });
+      if (res.data.message === 'next_round') {
+        router.push('/scoreboard');
+        return
+      }
       this.dispatch("getWord");
+    },
+    async skipWord({ commit }, { word }) {
+      const res = await axios.post(
+        `https://words-api.g-home.site/api/skip-word`,
+        {
+          word,
+        }
+      );
+      commit("SET_CURRENT_WORD", res.data[0]);
     },
     // async getScore({ commit }) {
     //   const res = await axios.get(

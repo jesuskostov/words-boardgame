@@ -24,6 +24,7 @@
           </div>
         </div>
         <button
+          v-if="orderID === userID"
           class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-3xl outline-none"
           @click="startGame"
         >
@@ -46,6 +47,8 @@ import store from "../store";
 
 const teams = ref([]);
 const players = ref([]);
+const orderID = ref(null);
+
 
 const positionOnCircle = (index, total) => {
   const angle = index * (360 / total) * (Math.PI / 180);
@@ -92,9 +95,11 @@ const mixTeams = async () => {
           team_color: team.color,
         });
       }
-    }
-
+    }    
+    console.log(res);
     players.value = [...teamLeaders, ...teamMembers];
+    orderID.value = res.data.order[0]?.user_id
+
   } catch (error) {
     console.error("Error fetching teams:", error);
   }
@@ -108,10 +113,13 @@ const loggedPlayers = computed(() => store.state.loggedPlayers);
 const expectedPlayers = computed(() => store.state.teams);
 const expectedWords = computed(() => store.state.words_test);
 const allInsertedWords = computed(() => store.state.allInsertedWords.length);
+const userID = computed(() => store.state.user?.id);
+console.log("userID", userID.value);
 
 onMounted(async () => {
   await store.dispatch("getLoggedPlayers");
   await store.dispatch("getExpectedWordsForAGame");
+  await store.dispatch("getCurrentUser");
   if (
     loggedPlayers.value === expectedPlayers.value * 2 &&
     expectedWords.value === allInsertedWords.value

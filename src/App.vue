@@ -45,8 +45,17 @@ window.Echo.channel("turn-update").listen("TurnUpdate", (e) => {
 });
 
 window.Echo.channel("game-started").listen("GameStarted", (e) => {
-  console.log("game started");
-  router.push("/playground");
+  router.push({
+    path: "/playground",
+    query: { fromGameStarted: true }
+  });
+});
+
+window.Echo.channel("next-round").listen("NextRound", (e) => {
+  console.log("next round");
+  setTimeout(() => {
+    router.push("/scoreboard");
+  }, 500)
 });
 
 onMounted(() => {

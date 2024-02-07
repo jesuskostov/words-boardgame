@@ -9,7 +9,12 @@
     <p class="text-white text-center text-2xl mt-2">
       {{ formatTime(timeLeft) }}
     </p>
-    <button @click="pauseTimer" class="text-white">Pause</button>
+    <div v-if="current_turn?.id === user?.id">
+      <button v-if="!isTimePaused" @click="pauseTimer" class="text-white">
+        Pause
+      </button>
+      <button v-else @click="resumeTimer" class="text-white">Resume</button>
+    </div>
     <div
       v-if="current_turn?.id !== user?.id"
       class="fixed top-1/3 left-1/2 transform -translate-x-1/2 w-full px-4 h-52 flex flex-col items-center"
@@ -34,38 +39,74 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, onUnmounted, watch } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import store from "../store/index";
 import axios from "axios";
 
 export default {
   setup(_, { emit }) {
     const timeLeft = ref(0);
-    const totalDuration = ref(0); // Store the total duration
-    let timer = null;
-    const duration = computed(() => store.state.time);
+    const totalDuration = ref(store.state.time);
+    const timer = ref(null);
+    const isTimePaused = ref(false);
 
-    window.Echo.channel("timer-start").listen("TimerStart", (e) => {
-      totalDuration.value = duration.value;
+    const clearTimer = () => {
+      if (timer.value) {
+        clearInterval(timer.value);
+        timer.value = null;
+      }
+    };
+
+    window.Echo.channel("game-timer").listen("TimerStart", async (e) => {
+      // Check if a timer is already running with the same duration to prevent reinitialization
+      if (timer.value && timeLeft.value === e.duration && !isTimePaused.value) {
+        console.log("Timer is already running with the same duration. Skipping reinitialization.");
+        return;
+      }
+      clearTimer();
+      timeLeft.value = await e.duration;
       const startTime = Date.now();
-      localStorage.setItem("timerStart", startTime);
-      localStorage.setItem("timerDuration", duration.value);
-      updateTimeLeft();
-      timer = setInterval(updateTimeLeft, 1000);
+      timer.value = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        timeLeft.value = Math.max(0, e.duration - elapsed);
+
+        if (timeLeft.value <= 0) {
+          clearTimer();
+          endRound();
+        }
+      }, 1000);
+      isTimePaused.value = false;
     });
 
-    window.Echo.channel("pause-timer").listen("TimerPause", (e) => {
-      // pause timer and save the time left
-      clearInterval(timer);
-      localStorage.setItem("timerStart", Date.now());
-      localStorage.setItem("timerDuration", timeLeft.value);
+    window.Echo.channel("game-timer").listen("TimerPause", (e) => {
+      clearTimer();
+      isTimePaused.value = true;
     });
 
-    const progressBarWidth = computed(() => {
-      return (timeLeft.value / totalDuration.value) * 100;
+    window.Echo.channel("game-timer").listen("TimerResume", async (e) => {
+      const duration = await e.duration;
+      resume(duration);
+      isTimePaused.value = false;
     });
+
+    const resume = (remainingTime) => {
+      clearTimer();
+      timeLeft.value = remainingTime;
+      const resumeTime = Date.now();
+      timer.value = setInterval(() => {
+        const elapsedSinceResume = Math.floor((Date.now() - resumeTime) / 1000);
+        timeLeft.value = Math.max(0, remainingTime - elapsedSinceResume);
+
+        if (timeLeft.value <= 0) {
+          clearTimer();
+          endRound();
+          console.log(2222);
+        }
+      }, 1000);
+    };
 
     const progressBarStyle = computed(() => {
+      totalDuration.value = store.state.time;
       const width = Math.max(0, (timeLeft.value / totalDuration.value) * 100);
       return {
         width: `${width}%`,
@@ -73,74 +114,85 @@ export default {
       };
     });
 
-    const updateTimeLeft = () => {
-      const startTime = parseInt(localStorage.getItem("timerStart"), 10);
-      const duration = parseInt(localStorage.getItem("timerDuration"), 10);
-
-      // Check for NaN values
-      if (isNaN(startTime) || isNaN(duration)) {
-        clearInterval(timer);
-        timeLeft.value = 0;
-        return;
-      }
-
-      const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      timeLeft.value = Math.max(0, duration - elapsed);
-
-      if (timeLeft.value <= 0) {
-        clearInterval(timer);
-        endRound();
-      }
+    const startTimer = async () => {
+      await axios.post("https://words-api.g-home.site/api/start-timer");
     };
 
-    const startTimer = () => {
-      axios.post("https://words-api.g-home.site/api/start-timer");
+    const pauseTimer = async () => {
+      await axios.post("https://words-api.g-home.site/api/pause-timer");
+      emit("paused");
     };
 
-    const pauseTimer = () => {
-      axios.post("https://words-api.g-home.site/api/pause-timer");
+    const resumeTimer = async () => {
+      emit(
+        "skipped",
+        localStorage.getItem("is_skipped_used")
+          ? localStorage.getItem("is_skipped_used")
+          : false
+      );
+      await axios.post("https://words-api.g-home.site/api/resume-timer");
+      emit("resumed");
     };
 
     const user = computed(() => store.state.user);
     const current_turn = computed(() => store.state.current_turn);
 
-    // watch([user, current_turn], ([newUser, newCurrentTurn]) => {
-    //   if (
-    //     newUser?.id !== undefined &&
-    //     newCurrentTurn?.id !== undefined &&
-    //     newUser.id === newCurrentTurn.id
-    //   ) {
-    //     // console.log("Your turn");
-    //   } else {
-    //     // console.log(current_turn.value);
-    //   }
-    // });
-
     const endRound = () => {
-      // Make API call to server to end the round
-      localStorage.removeItem("timerStart");
-      localStorage.removeItem("timerDuration");
+      clearTimer();
+      axios.post("https://words-api.g-home.site/api/stop-timer");
       emit("reset");
-      console.log("try to emit");
       if (user.value.id === current_turn.value.id) {
         store.dispatch("endRound");
       }
     };
 
-    onMounted(() => {
-      const storedStartTime = localStorage.getItem("timerStart");
-      const storedDuration = localStorage.getItem("timerDuration");
-
-      if (storedStartTime && storedDuration) {
-        totalDuration.value = parseInt(storedDuration);
-        updateTimeLeft();
-        timer = setInterval(updateTimeLeft, 1000);
+    onMounted(async () => {
+      try {
+        const tokne = localStorage.getItem("token");
+        if (!tokne) {
+          return;
+        }
+        const response = await axios.get(
+          "https://words-api.g-home.site/api/get-current-time"
+        );
+        const data = response.data;
+        if (data.timerState === "running" || data.timerState === "paused") {
+          timeLeft.value = data.remainingTime;
+          totalDuration.value = data.totalDuration;
+          if (data.timerState === "running") {
+            startTimerWithRemainingTime(data.remainingTime);
+          }
+        }
+        if (data.timerState === "paused") {
+          isTimePaused.value = true;
+          emit("paused");
+        }
+        if (data.timerState === "running") {
+          isTimePaused.value = false;
+          emit("resumed");
+        }
+      } catch (error) {
+        console.error("Error fetching timer state:", error);
       }
     });
 
+    const startTimerWithRemainingTime = (remainingTime) => {
+      clearTimer();
+      const startTime = Date.now();
+      timer.value = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        timeLeft.value = Math.max(0, remainingTime - elapsed);
+        if (timeLeft.value <= 0) {
+          clearTimer();
+          endRound();
+          console.log(33333);
+        }
+      }, 1000);
+    };
+
     onUnmounted(() => {
-      if (timer) {
-        clearInterval(timer);
+      if (timer.value) {
+        clearInterval(timer.value);
       }
     });
 
@@ -151,7 +203,6 @@ export default {
     };
 
     return {
-      progressBarWidth,
       progressBarStyle,
       startTimer,
       timeLeft,
@@ -159,6 +210,8 @@ export default {
       current_turn,
       user,
       pauseTimer,
+      resumeTimer,
+      isTimePaused,
     };
   },
 };

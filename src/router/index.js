@@ -7,6 +7,7 @@ import Selfie from "../screens/Selfie.vue";
 import WaitingPlayers from "../screens/WaitingPlayers.vue";
 import WordsCreation from "../screens/WordsCreation.vue";
 import TeamSelection from "../screens/TeamSelection.vue";
+import Scoreboard from "../screens/Scoreboard.vue";
 
 const routes = [
   {
@@ -49,6 +50,11 @@ const routes = [
     name: "TeamSelection",
     component: TeamSelection,
   },
+  {
+    path: "/scoreboard",
+    name: "Scoreboard",
+    component: Scoreboard,
+  }
 ];
 
 const router = createRouter({

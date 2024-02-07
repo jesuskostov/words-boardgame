@@ -74,7 +74,7 @@ const expectedWords = computed(() => store.state.words_test);
 const allInsertedWords = computed(() => store.state.allInsertedWords.length);
 
 const routeToNextScreen = (isGameRunning) => {
-  if (store.state.user.photo_path === null) {
+  if (store.state.user?.photo_path === null) {
     router.push("/selfie");
     return;
   }
@@ -87,7 +87,6 @@ const routeToNextScreen = (isGameRunning) => {
 
   if (isGameRunning === 0) {
     if (expectedWords.value !== allInsertedWords.value) {
-      console.log("Initialiser");
       router.push("/words-creation");
       return;
     } else {
